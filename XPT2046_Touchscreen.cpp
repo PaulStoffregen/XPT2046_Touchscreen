@@ -75,6 +75,9 @@ static int32_t distsq(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
 	return (int32_t)dx * (int32_t)dx + (int32_t)dy * (int32_t)dy;
 }
 
+// TODO: perhaps a future version should offer an option for more oversampling,
+//       with the RANSAC algorithm https://en.wikipedia.org/wiki/RANSAC
+
 void XPT2046_Touchscreen::update()
 {
 	int16_t data[6];

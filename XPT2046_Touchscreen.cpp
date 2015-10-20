@@ -68,9 +68,9 @@ bool XPT2046_Touchscreen::bufferEmpty()
 	return ((millis() - msraw) < MSEC_THRESHOLD);
 }
 
-static int32_t besttwoavg( int32_t x , int32_t y , int32_t z ) {
-  int32_t da, db, dc;
-  int32_t reta = 0;
+static int16_t besttwoavg( int16_t x , int16_t y , int16_t z ) {
+  int16_t da, db, dc;
+  int16_t reta = 0;
   if ( x > y ) da = x - y; else da = y - x;
   if ( x > z ) db = x - z; else db = z - x;
   if ( z > y ) dc = z - y; else dc = y - z;

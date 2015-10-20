@@ -7,7 +7,9 @@
 XPT2046_Touchscreen ts(CS_PIN);
 
 void setup() {
+  Serial.begin(38400);
   ts.begin();
+  while (!Serial && (millis() <= 1000));
 }
 
 void loop() {

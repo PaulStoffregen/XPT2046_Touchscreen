@@ -95,9 +95,11 @@ void XPT2046_Touchscreen::update()
 	digitalWrite(csPin, LOW);
 	SPI.transfer(0xB1 /* Z1 */);
 	int16_t z1 = SPI.transfer16(0xC1 /* Z2 */) >> 3;
+	int z = z1 + 4095;
 	int16_t z2 = SPI.transfer16(0x91 /* X */) >> 3;
-	int touched = SPI.transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
-	if ( touched ) {
+	z -= z2;
+	if (z >= Z_THRESHOLD) {
+		SPI.transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
 		data[0] = SPI.transfer16(0xD1 /* Y */) >> 3;
 		data[1] = SPI.transfer16(0x91 /* X */) >> 3; // make 3 x-y measurements
 		data[2] = SPI.transfer16(0xD1 /* Y */) >> 3;
@@ -107,15 +109,17 @@ void XPT2046_Touchscreen::update()
 	data[5] = SPI.transfer16(0) >> 3;
 	digitalWrite(csPin, HIGH);
 	SPI.endTransaction();
-	if ( !touched ) {
+	//Serial.printf("z=%d  ::  z1=%d,  z2=%d  ", z, z1, z2);
+	if (z < 0) z = 0;
+	if (z < Z_THRESHOLD) { //	if ( !touched ) {
+		// Serial.println();
 		zraw = 0;
 		return;
 	}
-	int z = z1 + 4095 - z2;
-	if (z < 0) z = 0;
 	zraw = z;
 	
 	// Average pair with least distance between each measured x then y
+	//Serial.printf("    z1=%d,z2=%d  ", z1, z2);
 	//Serial.printf("p=%d,  %d,%d  %d,%d  %d,%d", zraw,
 		//data[0], data[1], data[2], data[3], data[4], data[5]);
 	int16_t x = besttwoavg( data[0], data[2], data[4] );

@@ -105,6 +105,7 @@ void XPT2046_Touchscreen::update()
 		data[2] = SPI.transfer16(0xD1 /* Y */) >> 3;
 		data[3] = SPI.transfer16(0x91 /* X */) >> 3;
 	}
+	else data[0] = data[1] = data[2] = data[3] = 0;	// Compiler warns these values may be used unset on early exit.
 	data[4] = SPI.transfer16(0xD0 /* Y */) >> 3;	// Last Y touch power down
 	data[5] = SPI.transfer16(0) >> 3;
 	digitalWrite(csPin, HIGH);
@@ -133,5 +134,6 @@ void XPT2046_Touchscreen::update()
 		yraw = y;
 	}
 }
+
 
 

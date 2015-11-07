@@ -68,11 +68,18 @@ bool XPT2046_Touchscreen::bufferEmpty()
 	return ((millis() - msraw) < MSEC_THRESHOLD);
 }
 
-static int32_t distsq(int16_t x1, int16_t y1, int16_t x2, int16_t y2)
-{
-	int16_t dx = x1 - x2;
-	int16_t dy = y1 - y2;
-	return (int32_t)dx * (int32_t)dx + (int32_t)dy * (int32_t)dy;
+static int16_t besttwoavg( int16_t x , int16_t y , int16_t z ) {
+  int16_t da, db, dc;
+  int16_t reta = 0;
+  if ( x > y ) da = x - y; else da = y - x;
+  if ( x > z ) db = x - z; else db = z - x;
+  if ( z > y ) dc = z - y; else dc = y - z;
+
+  if ( da <= db && da <= dc ) reta = (x + y) >> 1;
+  else if ( db <= da && db <= dc ) reta = (x + z) >> 1;
+  else reta = (y + z) >> 1;   //    else if ( dc <= da && dc <= db ) reta = (x + y) >> 1;
+
+  return (reta);
 }
 
 // TODO: perhaps a future version should offer an option for more oversampling,
@@ -84,60 +91,49 @@ void XPT2046_Touchscreen::update()
 
 	uint32_t now = millis();
 	if (now - msraw < MSEC_THRESHOLD) return;
-	msraw = now;
 	SPI.beginTransaction(SPI_SETTING);
 	digitalWrite(csPin, LOW);
 	SPI.transfer(0xB1 /* Z1 */);
 	int16_t z1 = SPI.transfer16(0xC1 /* Z2 */) >> 3;
+	int z = z1 + 4095;
 	int16_t z2 = SPI.transfer16(0x91 /* X */) >> 3;
-	SPI.transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
-	data[0] = SPI.transfer16(0xD1 /* Y */) >> 3;
-	data[1] = SPI.transfer16(0x91 /* X */) >> 3; // make 3 x-y measurements
-	data[2] = SPI.transfer16(0xD1 /* Y */) >> 3;
-	data[3] = SPI.transfer16(0x91 /* X */) >> 3;
-	data[4] = SPI.transfer16(0xD0 /* Y */) >> 3;
+	z -= z2;
+	if (z >= Z_THRESHOLD) {
+		SPI.transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
+		data[0] = SPI.transfer16(0xD1 /* Y */) >> 3;
+		data[1] = SPI.transfer16(0x91 /* X */) >> 3; // make 3 x-y measurements
+		data[2] = SPI.transfer16(0xD1 /* Y */) >> 3;
+		data[3] = SPI.transfer16(0x91 /* X */) >> 3;
+	}
+	else data[0] = data[1] = data[2] = data[3] = 0;	// Compiler warns these values may be used unset on early exit.
+	data[4] = SPI.transfer16(0xD0 /* Y */) >> 3;	// Last Y touch power down
 	data[5] = SPI.transfer16(0) >> 3;
 	digitalWrite(csPin, HIGH);
 	SPI.endTransaction();
-	int z = z1 + 4095 - z2;
+	//Serial.printf("z=%d  ::  z1=%d,  z2=%d  ", z, z1, z2);
 	if (z < 0) z = 0;
+	if (z < Z_THRESHOLD) { //	if ( !touched ) {
+		// Serial.println();
+		zraw = 0;
+		return;
+	}
 	zraw = z;
-	// compute the distance between each pair of x-y measurements
+	
+	// Average pair with least distance between each measured x then y
+	//Serial.printf("    z1=%d,z2=%d  ", z1, z2);
 	//Serial.printf("p=%d,  %d,%d  %d,%d  %d,%d", zraw,
 		//data[0], data[1], data[2], data[3], data[4], data[5]);
-	int32_t d12 = distsq(data[0], data[1], data[2], data[3]);
-	int32_t d23 = distsq(data[2], data[3], data[4], data[5]);
-	int32_t d13 = distsq(data[0], data[1], data[4], data[5]);
-	//Serial.printf("  %6d  %6d  %6d", d12, d23, d13);
-	// choose the pair with the least distance and average them
-	int16_t x=0, y=0;
-	if (d12 < d23) { // do not use d23
-		if (d13 < d12) {
-			// use d13
-			x = (data[0] + data[4]) >> 1;
-			y = (data[1] + data[5]) >> 1;
-		} else {
-			// use d12
-			x = (data[0] + data[2]) >> 1;
-			y = (data[1] + data[3]) >> 1;
-		}
-	} else { // do not use d12
-		if (d13 < d23) {
-			// use d13
-			x = (data[0] + data[4]) >> 1;
-			y = (data[1] + data[5]) >> 1;
-		} else {
-			// use d23
-			x = (data[2] + data[4]) >> 1;
-			y = (data[3] + data[5]) >> 1;
-		}
-	}
+	int16_t x = besttwoavg( data[0], data[2], data[4] );
+	int16_t y = besttwoavg( data[1], data[3], data[5] );
+	
 	//Serial.printf("    %d,%d", x, y);
 	//Serial.println();
 	if (z >= Z_THRESHOLD) {
+		msraw = now;	// good read completed, set wait
 		xraw = x;
 		yraw = y;
 	}
 }
+
 
 

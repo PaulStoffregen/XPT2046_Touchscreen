@@ -12,10 +12,12 @@ XPT2046_Touchscreen ts(CS_PIN);
 ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC);
 
 void setup() {
+  Serial.begin(38400);
   tft.begin();
   tft.setRotation(1);
   tft.fillScreen(ILI9341_BLACK);
   ts.begin();
+  while (!Serial && (millis() <= 1000));
 }
 
 boolean wastouched = true;

@@ -50,7 +50,7 @@ public:
 	uint8_t bufferSize() { return 1; }
 
 private:
-	void update();
+	void update(boolean getpoint);
 	uint8_t csPin;
 	int16_t xraw, yraw, zraw;
 	uint32_t msraw;

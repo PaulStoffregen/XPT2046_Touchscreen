@@ -45,19 +45,19 @@ bool XPT2046_Touchscreen::begin()
 
 TS_Point XPT2046_Touchscreen::getPoint()
 {
-	update( true );
+	update();
 	return TS_Point(xraw, yraw, zraw);
 }
 
 bool XPT2046_Touchscreen::touched()
 {
-	update( false );
+	update();
 	return (zraw >= Z_THRESHOLD);
 }
 
 void XPT2046_Touchscreen::readData(uint16_t *x, uint16_t *y, uint8_t *z)
 {
-	update( true );
+	update();
 	*x = xraw;
 	*y = yraw;
 	*z = zraw;
@@ -85,7 +85,7 @@ static int16_t besttwoavg( int16_t x , int16_t y , int16_t z ) {
 // TODO: perhaps a future version should offer an option for more oversampling,
 //       with the RANSAC algorithm https://en.wikipedia.org/wiki/RANSAC
 
-void XPT2046_Touchscreen::update( boolean getpoint )
+void XPT2046_Touchscreen::update()
 {
 	int16_t data[6];
 
@@ -98,7 +98,7 @@ void XPT2046_Touchscreen::update( boolean getpoint )
 	int z = z1 + 4095;
 	int16_t z2 = SPI.transfer16(0x91 /* X */) >> 3;
 	z -= z2;
-	if (z >= Z_THRESHOLD && getpoint) {
+	if (z >= Z_THRESHOLD) {
 		SPI.transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
 		data[0] = SPI.transfer16(0xD1 /* Y */) >> 3;
 		data[1] = SPI.transfer16(0x91 /* X */) >> 3; // make 3 x-y measurements
@@ -118,8 +118,7 @@ void XPT2046_Touchscreen::update( boolean getpoint )
 		return;
 	}
 	zraw = z;
-	if (!getpoint)
-		return;
+	
 	// Average pair with least distance between each measured x then y
 	//Serial.printf("    z1=%d,z2=%d  ", z1, z2);
 	//Serial.printf("p=%d,  %d,%d  %d,%d  %d,%d", zraw,

@@ -41,17 +41,19 @@ public:
 
 class XPT2046_Touchscreen {
 public:
-	XPT2046_Touchscreen(uint8_t cspin);
+	XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255);
 	bool begin();
 	TS_Point getPoint();
 	bool touched();
 	void readData(uint16_t *x, uint16_t *y, uint8_t *z);
 	bool bufferEmpty();
 	uint8_t bufferSize() { return 1; }
+// protected:
+	bool isrWake;
 
 private:
 	void update();
-	uint8_t csPin;
+	uint8_t csPin, tirqPin;
 	int16_t xraw, yraw, zraw;
 	uint32_t msraw;
 };

@@ -23,6 +23,7 @@
 #include "XPT2046_Touchscreen.h"
 
 #define Z_THRESHOLD     400
+#define Z_THRESHOLD_INT	75
 #define MSEC_THRESHOLD  3
 #define SPI_SETTING     SPISettings(2000000, MSBFIRST, SPI_MODE0)
 
@@ -133,7 +134,9 @@ void XPT2046_Touchscreen::update()
 	if (z < Z_THRESHOLD) { //	if ( !touched ) {
 		// Serial.println();
 		zraw = 0;
-		if (255 != tirqPin) isrWake = false;
+		if (z < Z_THRESHOLD_INT) { //	if ( !touched ) {
+			if (255 != tirqPin) isrWake = false;
+		}
 		return;
 	}
 	zraw = z;

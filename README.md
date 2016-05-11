@@ -13,6 +13,14 @@ used automatically.
     #define CS_PIN  8
     XPT2046_Touchscreen ts(CS_PIN);
 
+The use of the Touch interrupt pin can be optionally specified. If the Teensy
+pin specified is actively connected to the T_IRQ display pin then the normal
+touch calls will respond, but can be called more often as each call returns
+without hardware access when no interrupt was recorded.
+
+    #define TIRQ_PIN  2
+    XPT2046_Touchscreen ts(CS_PIN, TIRQ_PIN);
+
 In setup(), use the begin function to initialize the touchscreen
 
       ts.begin();
@@ -45,7 +53,11 @@ The Z coordinate represents the amount of pressure applied to the screen.
 
 XPT2046_Touchscreen is meant to be a compatible with sketches written for Adafruit_STMPE610, offering the same functions, parameters and numerical ranges as Adafruit's library.
 
-## Using The Interrupt Pin
+## Using The Interrupt Pin : Built in support when connected nothing else is needed. When specified as above
+no SPI calls are made unless a Touch was detected.  On normal connections - this means the Teensy LED
+won't blink on every touch query.
+
+## Using The Interrupt Pin : Custom use would preclude the normal built in usage. The warning below is justified.
 
 The XPT2046 chip has an interrupt output, which is typically labeled T_IRQ on many low cost TFT displays.  No special software support is needed in this library.  The interrupt pin always outputs a digital signal related to the touch controller signals, which is LOW when the display is touched.  It also is driven low while software reads the touch position.
 

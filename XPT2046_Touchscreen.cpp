@@ -27,10 +27,11 @@
 #define MSEC_THRESHOLD  3
 #define SPI_SETTING     SPISettings(2000000, MSBFIRST, SPI_MODE0)
 
-XPT2046_Touchscreen::XPT2046_Touchscreen(uint8_t cs, uint8_t tirq)
+XPT2046_Touchscreen::XPT2046_Touchscreen(uint8_t cs, uint8_t tirq, uint8_t _orientation)
 {
 	csPin = cs;
 	tirqPin = tirq;
+	orientation = _orientation;
 	msraw = 0x80000000;
 	xraw = 0;
 	yraw = 0;
@@ -46,7 +47,7 @@ bool XPT2046_Touchscreen::begin()
 	SPI.begin();
 	pinMode(csPin, OUTPUT);
 	digitalWrite(csPin, HIGH);
-	if (255 != tirqPin) {
+	if (XPT2046_NO_IRQ != tirqPin) {
 		pinMode( tirqPin, INPUT );
 		attachInterrupt(digitalPinToInterrupt(tirqPin), isrPin, FALLING);
 		isrPinptr = this;
@@ -135,7 +136,7 @@ void XPT2046_Touchscreen::update()
 		// Serial.println();
 		zraw = 0;
 		if (z < Z_THRESHOLD_INT) { //	if ( !touched ) {
-			if (255 != tirqPin) isrWake = false;
+			if (XPT2046_NO_IRQ != tirqPin) isrWake = false;
 		}
 		return;
 	}
@@ -152,8 +153,20 @@ void XPT2046_Touchscreen::update()
 	//Serial.println();
 	if (z >= Z_THRESHOLD) {
 		msraw = now;	// good read completed, set wait
-		xraw = x;
-		yraw = y;
+		if (orientation & XPT2046_FLIP_X)
+			x = 4096-x;
+		if (orientation & XPT2046_FLIP_Y)
+			y = 4096-y;
+		if (orientation & XPT2046_SWITCH_XY)
+		{
+			xraw = y;
+			yraw = x;
+		}
+		else
+		{
+			xraw = x;
+			yraw = y;
+		}
 	}
 }
 

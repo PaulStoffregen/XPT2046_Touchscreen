@@ -21,6 +21,16 @@ without hardware access when no interrupt was recorded.
     #define TIRQ_PIN  2
     XPT2046_Touchscreen ts(CS_PIN, TIRQ_PIN);
 
+A third constructor parameter allows you to modify the orientation of the
+default coordinate system. It consists of three flags: XPT2046_SWITCH_XY,
+XPT2046_FLIP_X, XPT2046_FLIP_Y. If you don't want to use an interrupt pin,
+you need to disable that by passing XPT2046_NO_IRQ as the second parameter.
+For example, the following constructor makes the cheap TJCTMP24024 board
+produce coordinates comparable to the Arduino STMPE610 touchscreens,
+so you can use the example code just by redefining the touchscreen:
+
+    XPT2046_Touchscreen ts(CS_PIN, XPT2046_NO_IRQ, XPT2046_SWITCH_XY | XPT2046_FLIP_Y);
+
 In setup(), use the begin function to initialize the touchscreen
 
       ts.begin();

@@ -39,9 +39,13 @@ public:
 	int16_t x, y, z;
 };
 
+#define	XPT2046_NO_IRQ	255
+#define XPT2046_SWITCH_XY	0x1
+#define XPT2046_FLIP_X		0x2
+#define XPT2046_FLIP_Y		0x4
 class XPT2046_Touchscreen {
 public:
-	XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255);
+	XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=XPT2046_NO_IRQ, uint8_t orientation = 0);
 	bool begin();
 	TS_Point getPoint();
 	bool touched();
@@ -54,6 +58,7 @@ public:
 private:
 	void update();
 	uint8_t csPin, tirqPin;
+	uint8_t orientation;
 	int16_t xraw, yraw, zraw;
 	uint32_t msraw;
 };

@@ -48,7 +48,7 @@ bool XPT2046_Touchscreen::begin()
 	digitalWrite(csPin, HIGH);
 	if (255 != tirqPin) {
 		pinMode( tirqPin, INPUT );
-		attachInterrupt( tirqPin, isrPin, FALLING );
+		attachInterrupt(digitalPinToInterrupt(tirqPin), isrPin, FALLING);
 		isrPinptr = this;
 	}
 	return true;
@@ -64,6 +64,11 @@ TS_Point XPT2046_Touchscreen::getPoint()
 {
 	update();
 	return TS_Point(xraw, yraw, zraw);
+}
+
+bool XPT2046_Touchscreen::tirqTouched()
+{
+	return (isrWake);
 }
 
 bool XPT2046_Touchscreen::touched()

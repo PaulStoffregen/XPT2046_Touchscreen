@@ -44,6 +44,7 @@ public:
 	XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255);
 	bool begin();
 	TS_Point getPoint();
+	bool tirqTouched();
 	bool touched();
 	void readData(uint16_t *x, uint16_t *y, uint8_t *z);
 	bool bufferEmpty();

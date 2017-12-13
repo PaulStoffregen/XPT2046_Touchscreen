@@ -16,21 +16,6 @@ void setup() {
   while (!Serial && (millis() <= 1000));
 }
 
-void loopB() {
-  TS_Point p = ts.getPoint();
-  Serial.print("Pressure = ");
-  Serial.print(p.z);
-  if (ts.touched()) {
-    Serial.print(", x = ");
-    Serial.print(p.x);
-    Serial.print(", y = ");
-    Serial.print(p.y);
-  }
-  Serial.println();
-  //  delay(100);
-  delay(30);
-}
-
 void loop() {
   if (ts.touched()) {
     TS_Point p = ts.getPoint();

@@ -50,7 +50,7 @@ public:
 	bool bufferEmpty();
 	uint8_t bufferSize() { return 1; }
 // protected:
-	bool isrWake;
+	volatile bool isrWake;
 
 private:
 	void update();

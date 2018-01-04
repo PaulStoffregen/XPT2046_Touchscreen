@@ -41,7 +41,8 @@ public:
 
 class XPT2046_Touchscreen {
 public:
-	XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255);
+	constexpr XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255)
+		: csPin(cspin), tirqPin(tirq) { }
 	bool begin();
 	TS_Point getPoint();
 	bool tirqTouched();
@@ -51,13 +52,13 @@ public:
 	uint8_t bufferSize() { return 1; }
 	void setRotation(uint8_t n) { rotation = n % 4; }
 // protected:
-	volatile bool isrWake;
+	volatile bool isrWake=true;
 
 private:
 	void update();
-	uint8_t csPin, tirqPin, rotation;
-	int16_t xraw, yraw, zraw;
-	uint32_t msraw;
+	uint8_t csPin, tirqPin, rotation=1;
+	int16_t xraw=0, yraw=0, zraw=0;
+	uint32_t msraw=0x80000000;
 };
 
 #endif

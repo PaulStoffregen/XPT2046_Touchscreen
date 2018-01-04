@@ -27,18 +27,6 @@
 #define MSEC_THRESHOLD  3
 #define SPI_SETTING     SPISettings(2000000, MSBFIRST, SPI_MODE0)
 
-XPT2046_Touchscreen::XPT2046_Touchscreen(uint8_t cs, uint8_t tirq)
-{
-	csPin = cs;
-	tirqPin = tirq;
-	msraw = 0x80000000;
-	xraw = 0;
-	yraw = 0;
-	zraw = 0;
-	isrWake = true;
-	rotation = 1;
-}
-
 static XPT2046_Touchscreen 	*isrPinptr;
 void isrPin(void);
 

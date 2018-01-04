@@ -13,6 +13,7 @@ XPT2046_Touchscreen ts(CS_PIN, TIRQ_PIN);  // Param 2 - Touch IRQ Pin - interrup
 void setup() {
   Serial.begin(38400);
   ts.begin();
+  ts.setRotation(1);
   while (!Serial && (millis() <= 1000));
 }
 

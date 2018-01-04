@@ -22,6 +22,7 @@ void setup() {
   tft.setRotation(1);
   tft.fillScreen(ILI9341_BLACK);
   ts.begin();
+  ts.setRotation(1);
   while (!Serial && (millis() <= 1000));
 }
 

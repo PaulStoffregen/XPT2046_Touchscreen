@@ -21,9 +21,13 @@ without hardware access when no interrupt was recorded.
     #define TIRQ_PIN  2
     XPT2046_Touchscreen ts(CS_PIN, TIRQ_PIN);
 
-In setup(), use the begin function to initialize the touchscreen
+In setup(), use the begin() function to initialize the touchscreen, and
+optionally use setRotation(n), where n is 0 to 3, matching the rotation
+setting in ILI9341_t3, Adafruit_ILI9341 or other Adafruit compatible TFT
+libraries.
 
       ts.begin();
+      ts.setRotation(1);
 
 ## Reading Touch Info
 

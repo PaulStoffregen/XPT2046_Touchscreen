@@ -49,12 +49,13 @@ public:
 	void readData(uint16_t *x, uint16_t *y, uint8_t *z);
 	bool bufferEmpty();
 	uint8_t bufferSize() { return 1; }
+	void setRotation(uint8_t n) { rotation = n % 4; }
 // protected:
 	volatile bool isrWake;
 
 private:
 	void update();
-	uint8_t csPin, tirqPin;
+	uint8_t csPin, tirqPin, rotation;
 	int16_t xraw, yraw, zraw;
 	uint32_t msraw;
 };

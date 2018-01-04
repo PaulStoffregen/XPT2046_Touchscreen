@@ -5,3 +5,4 @@ touched	KEYWORD2
 readData	KEYWORD2
 bufferEmpty	KEYWORD2
 bufferSize	KEYWORD2
+setRotation	KEYWORD2

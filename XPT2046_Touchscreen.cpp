@@ -36,6 +36,7 @@ XPT2046_Touchscreen::XPT2046_Touchscreen(uint8_t cs, uint8_t tirq)
 	yraw = 0;
 	zraw = 0;
 	isrWake = true;
+	rotation = 1;
 }
 
 static XPT2046_Touchscreen 	*isrPinptr;
@@ -157,8 +158,23 @@ void XPT2046_Touchscreen::update()
 	//Serial.println();
 	if (z >= Z_THRESHOLD) {
 		msraw = now;	// good read completed, set wait
-		xraw = x;
-		yraw = y;
+		switch (rotation) {
+		  case 0:
+			xraw = 4095 - y;
+			yraw = x;
+			break;
+		  case 1:
+			xraw = x;
+			yraw = y;
+			break;
+		  case 2:
+			xraw = y;
+			yraw = 4095 - x;
+			break;
+		  default: // 3
+			xraw = 4095 - x;
+			yraw = 4095 - y;
+		}
 	}
 }
 

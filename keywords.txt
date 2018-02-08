@@ -1,8 +1,16 @@
 XPT2046_Touchscreen	KEYWORD1
 TS_Point	KEYWORD1
+TS_Calibration	KEYWORD1
 getPoint	KEYWORD2
 touched	KEYWORD2
 readData	KEYWORD2
 bufferEmpty	KEYWORD2
 bufferSize	KEYWORD2
 setRotation	KEYWORD2
+getPixel	KEYWORD2
+setWidth	KEYWORD2
+setHeight	KEYWORD2
+getCalibrationPoints	KEYWORD2
+setCalibration	KEYWORD2
+getCalibrationObject	KEYWORD2
+saveCalibrationToEEPROM	KEYWORD2

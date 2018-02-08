@@ -60,7 +60,7 @@ TS_Point XPT2046_Touchscreen::getPoint()
 
   uint16_t x = xraw, y = yraw;
 
-  this->rotate(x, y);
+  this->rotateRaw(x, y);
 
   return TS_Point(x, y, zraw);
 }
@@ -84,7 +84,7 @@ void XPT2046_Touchscreen::readData(uint16_t *x, uint16_t *y, uint8_t *z)
   *y = yraw;
   *z = zraw;
 
-  this->rotate(*x, *y);
+  this->rotateRaw(*x, *y);
 }
 
 bool XPT2046_Touchscreen::bufferEmpty()
@@ -175,7 +175,7 @@ TS_Point XPT2046_Touchscreen::getPixel() {
   uint16_t yPixel = (uint16_t)(_cal_dy * (yraw - _cal_vj1) / _cal_dvj + CAL_OFFSET);
 #endif
   
-  this->rotate(xPixel, yPixel);
+  this->rotateCal(xPixel, yPixel);
 
   return TS_Point(xPixel, yPixel, zraw);
 }
@@ -211,21 +211,42 @@ TS_Calibration XPT2046_Touchscreen::getEEPROMCalibration(unsigned int eepromSlot
   return cal;
 }
 
-void XPT2046_Touchscreen::rotate(uint16_t &x, uint16_t &y){
+void XPT2046_Touchscreen::rotateRaw(uint16_t &x, uint16_t &y){
+  uint16_t tempX = x, tempY = y;
+  
   switch (rotation) {
     case 0:
-      x = 4095 - y;
-      y = x;
+      x = 4095 - tempY;
+      y = tempX;
       break;
     case 1:
       break;
     case 2:
-      x = y;
-      y = 4095 - x;
+      x = tempY;
+      y = 4095 - tempX;
       break;
     default: // 3
-      x = 4095 - x;
-      y = 4095 - y;
+      x = 4095 - tempX;
+      y = 4095 - tempY;
   }
 }
 
+void XPT2046_Touchscreen::rotateCal(uint16_t &x, uint16_t &y){
+  uint16_t tempX = x, tempY = y;
+  
+  switch (rotation) {
+    case 0:
+      x = _height - tempY;
+      y = tempX;
+      break;
+    case 1:
+      break;
+    case 2:
+      x = tempY;
+      y = _width - tempX;
+      break;
+    default: // 3
+      x = _width - tempX;
+      y = _height - tempY;
+  }
+}

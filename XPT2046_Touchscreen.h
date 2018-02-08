@@ -101,7 +101,8 @@ class XPT2046_Touchscreen {
 
   private:
     void update();
-    void rotate(uint16_t &x, uint16_t &y);
+    void rotateRaw(uint16_t &x, uint16_t &y);
+    void rotateCal(uint16_t &x, uint16_t &y);
     
     uint8_t csPin, tirqPin, rotation = 1;
     int16_t xraw = 0, yraw = 0, zraw = 0, _width = 0, _height = 0;

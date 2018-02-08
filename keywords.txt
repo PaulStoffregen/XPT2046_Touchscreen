@@ -14,3 +14,4 @@ getCalibrationPoints	KEYWORD2
 setCalibration	KEYWORD2
 getCalibrationObject	KEYWORD2
 saveCalibrationToEEPROM	KEYWORD2
+getEEPROMCalibration	KEYWORD2

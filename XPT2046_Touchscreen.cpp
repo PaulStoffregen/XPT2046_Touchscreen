@@ -43,7 +43,11 @@ bool XPT2046_Touchscreen::begin()
 	return true;
 }
 
+#ifdef ESP32
+void IRAM_ATTR isrPin( void )
+#else
 void isrPin( void )
+#endif
 {
 	XPT2046_Touchscreen *o = isrPinptr;
 	o->isrWake = true;

@@ -29,6 +29,19 @@ libraries.
       ts.begin();
       ts.setRotation(1);
 
+Optionally you can also use a calibration (you can read more about calibration down below) to match the Pixels on your Screen. In the setup() ether use the calibration saved in the EEPROM:
+
+      ts.begin(displayWidth, displayHeight, getEEPROMCalibration());
+      
+Or just type in your own calibration data (read down below how to get them):
+
+      ts.begin(displayWidth, displayHeight, TS_Calibration(vi1, vj1, vi2, vj2);
+
+To get the width and heigth of the screen with a Adafruit GFX library compatible screen (or with the ILI9341_t3 library) you can use these commands:
+
+      ILI9341_t3 display = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST);
+      ts.begin(display.width(), display.height(), getEEPROMCalibration());
+      
 ## Reading Touch Info
 
 The touched() function tells if the display is currently being touched,
@@ -51,7 +64,21 @@ or with getPoint(), which returns a TS_Point object:
       Serial.print(", y = ");
       Serial.print(p.y);
 
+or with a calibration, to match the pixels on your screen (you have to set a calibration like shown above to use calibration, you also have to calibrate the display like shown down below):
+
+      TS_Point p = ts.getPixel();
+      Serial.print("calibrated x = ");
+      Serial.print(p.x);
+      Serial.print(", calibrated y = ");
+      Serial.print(p.y);
+
 The Z coordinate represents the amount of pressure applied to the screen.
+
+## Calibration
+
+To calibrate the Touchscreen, use the example scetch called "Calibration". Its ment to be used with the ILI9341_t3 library by Paul Stoffregen (but you can easily modify it to match your display using the Adafruit GFX library). To calibrate the display, load the scetch on your Arduino or Teensy (Change the pin definitions if they don't match with your setup) and tap the first, than the second + on the Screen. After all, you will see the calibration data in the following order for 3 seconds: vi1, vj1, vi2, vj2. The calibration is automatically saved in the EEPROM that you can use it easier the next time with a different scetch. After it saved the calibration to EEPROM and then after 3 seconds, you can draw something on the screen to test the calibration. If your drawing doesn't really match up with your actual touch-point, just redo the calibration process.
+
+What is EEPROM? The eeprom is a non-volitale storage in the Arduino/Teensy to save small amounts of data even if the Arduino is turned off. So it is great to save one or more calibration data in it to reuse it next time you power up the Arduino, or to use it with a different scetch.
 
 ## Adafruit Library Compatibility
 

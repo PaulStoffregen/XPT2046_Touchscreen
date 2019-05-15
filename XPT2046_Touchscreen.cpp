@@ -46,7 +46,7 @@ bool XPT2046_Touchscreen::begin()
 #ifdef ESP32
 void IRAM_ATTR isrPin( void )
 #else
-void isrPin( void )
+void ICACHE_RAM_ATTR isrPin( void )
 #endif
 {
 	XPT2046_Touchscreen *o = isrPinptr;

@@ -61,4 +61,15 @@ private:
 	uint32_t msraw=0x80000000;
 };
 
+#ifndef ISR_PREFIX
+  #if defined(ESP8266)
+    #define ISR_PREFIX ICACHE_RAM_ATTR
+  #elif defined(ESP32)
+    // TODO: should this also be ICACHE_RAM_ATTR ??
+    #define ISR_PREFIX IRAM_ATTR
+  #else
+    #define ISR_PREFIX
+  #endif
+#endif
+
 #endif

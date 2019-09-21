@@ -67,7 +67,7 @@ bool XPT2046_Touchscreen::touched()
 	return (zraw >= Z_THRESHOLD);
 }
 
-void XPT2046_Touchscreen::readData(uint16_t *x, uint16_t *y, uint8_t *z)
+void XPT2046_Touchscreen::readData(int16_t *x, int16_t *y, int16_t *z)
 {
 	update();
 	*x = xraw;

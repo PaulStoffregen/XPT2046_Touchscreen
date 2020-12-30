@@ -238,12 +238,11 @@ int16_t XPT2046_Touchscreen::updateADC(int16_t adc)
             data[0] = data[1] - data[0];
         }
         
-        SPI.transfer16(adc_address[adc]-7);	// dummy measure power down
-        SPI.transfer16(0);
+        _pspi->transfer16(adc_address[adc]-7);	// dummy measure power down
+        _pspi->transfer16(0);
 
         digitalWrite(csPin, HIGH);
-        SPI.endTransaction();
-        
+        _pspi->endTransaction();
     }
 #if defined(_FLEXIO_SPI_H_)
 	else if (_pflexspi) {
@@ -256,11 +255,11 @@ int16_t XPT2046_Touchscreen::updateADC(int16_t adc)
             _pflexspi->transfer16(adc_address[adc+1]);  // dummy measure, 1st is always noisy
             data[1] = _pflexspi->transfer16(adc_address[adc+1]) >> 3;
             
-            data[0] = data[1] - data[0];
+            data[0] = data[1] - data[0]; //Calclate differential between both readings
         }
         
-        SPI.transfer16(adc_address[adc]-7);	// dummy measure power down
-        SPI.transfer16(0);
+        _pflexspi->transfer16(adc_address[adc]-7);	// dummy measure power down
+        _pflexspi->transfer16(0);
         
         digitalWrite(csPin, HIGH);
 		_pflexspi->endTransaction();
@@ -268,7 +267,6 @@ int16_t XPT2046_Touchscreen::updateADC(int16_t adc)
 #endif
     
     return data[0];
-
 }
 
 float XPT2046_Touchscreen::getVBat()

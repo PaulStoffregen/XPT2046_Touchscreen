@@ -55,11 +55,12 @@ The Z coordinate represents the amount of pressure applied to the screen.
 
 ## Reading ADCs Info
 
-The XPT2046 is loaded with a VBat input with an internal voltage divider 1:4, so you can input 0.125V to 6V without issues. 
-There's also a AuxIn you can input 0.125V to 1.5V.
-Finally, there's also an ambient temperature sensor. The resolution is 1.6°C per bit and fluctuates a lot (+/- 3°C), but gives a general idea.
+The XPT2046 is loaded with different ADC inputs thats can be read
+ - VBat input with an internal voltage divider 1:4, so you can input 0.125V to 6V without issues. 
+ - AuxIn you can input 0.125V to 1.5V
+ - Temp/Temp0 are used for ambient temperature. The resolution is 1.6°C per bit and fluctuates a lot (+/- 3°C), but gives a general idea.
 
-Using the following commands, you can access those values:
+Using the following functions, you can read the ADCs and they'll return a float:
 
       Serial.println(ts.getVBat());
       Serial.println(ts.getAuxIn());

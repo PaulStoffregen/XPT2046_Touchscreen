@@ -5,7 +5,7 @@ getVBat		KEYWORD2
 getAuxIn	KEYWORD2
 getTemp		KEYWORD2
 getTempF	KEYWORD2
-touched	KEYWORD2
+touched	  KEYWORD2
 readData	KEYWORD2
 bufferEmpty	KEYWORD2
 bufferSize	KEYWORD2

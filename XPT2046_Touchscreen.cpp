@@ -27,6 +27,10 @@
 #define MSEC_THRESHOLD  3
 #define SPI_SETTING     SPISettings(2000000, MSBFIRST, SPI_MODE0)
 
+#define ADC_VBAT  0
+#define ADC_AUXIN 1
+#define ADC_TEMP  2
+
 static XPT2046_Touchscreen 	*isrPinptr;
 void isrPin(void);
 
@@ -215,5 +219,97 @@ void XPT2046_Touchscreen::update()
 	}
 }
 
+int16_t XPT2046_Touchscreen::updateADC(int16_t adc)
+{
+    int16_t adc_address[4] = {0xA7, 0xE7, 0x87, 0xF7};
+    
+    int16_t data[2];
+    
+    if (_pspi) {
+		_pspi->beginTransaction(SPI_SETTING);
+		digitalWrite(csPin, LOW);
+        
+        _pspi->transfer16(adc_address[adc]);  // dummy measure, 1st is always noisy
+        data[0] = _pspi->transfer16(adc_address[adc]) >> 3;
+        if (adc == ADC_TEMP) {
+            _pspi->transfer16(adc_address[adc+1]);  // dummy measure, 1st is always noisy
+            data[1] = _pspi->transfer16(adc_address[adc+1]) >> 3;
+            
+            data[0] = data[1] - data[0];
+        }
+        
+        SPI.transfer16(adc_address[adc]-7);	// dummy measure power down
+        SPI.transfer16(0);
 
+        digitalWrite(csPin, HIGH);
+        SPI.endTransaction();
+        
+    }
+#if defined(_FLEXIO_SPI_H_)
+	else if (_pflexspi) {
+        _pflexspi->beginTransaction(FLEXSPI_SETTING);
+		digitalWrite(csPin, LOW);
+        
+        _pflexspi->transfer16(adc_address[adc]);  // dummy measure, 1st is always noisy
+        data[0] = _pflexspi->transfer16(adc_address[adc]) >> 3;
+        if (adc == ADC_TEMP) {
+            _pflexspi->transfer16(adc_address[adc+1]);  // dummy measure, 1st is always noisy
+            data[1] = _pflexspi->transfer16(adc_address[adc+1]) >> 3;
+            
+            data[0] = data[1] - data[0];
+        }
+        
+        SPI.transfer16(adc_address[adc]-7);	// dummy measure power down
+        SPI.transfer16(0);
+        
+        digitalWrite(csPin, HIGH);
+		_pflexspi->endTransaction();
+    }
+#endif
+    
+    return data[0];
 
+}
+
+float XPT2046_Touchscreen::getVBat()
+{
+    int16_t data = updateADC(ADC_VBAT);
+    
+    float vbat  = ((data*0.0031) + (-0.3799));
+    if (vbat <= 0.135) vbat = 0.0; //0.125V is the minimum
+    
+    return vbat;
+}
+
+float XPT2046_Touchscreen::getAuxIn()
+{
+    int16_t data = updateADC(ADC_AUXIN);
+    
+    float auxin  = ((data*0.0031) + (-0.3799));
+    if (auxin <= 0.135) auxin = 0.0; //0.125V is the minimum
+    
+    return auxin;
+}
+
+float XPT2046_Touchscreen::getTemp()
+{
+    int16_t data = updateADC(ADC_TEMP);
+    
+    //Calculate temperature using differential temp0 vs temp1
+    float N = 91; // Current ratio in diode = 91. 
+    float lnN = log(N); //ln(N) = 4.51086
+    float k = 1.38054e-23;  // Boltzmann’s constant (1.38054 • 10−23 electron volts/Kelvin)
+    float q = 1.602189e-19; // Electron charge (1.602189 • 10–19 C). 
+    float vref = 2.5; //Internal VREF used for temperature
+    float dV = float(data) * (vref/4096.0F) * 1000.0F;
+    float constants = q / (k * lnN) / 1000.0F; //2.573
+    float C = (constants*dV);   //Resolution of 1.6°C per LSB (per bit)
+    
+    return C;
+}
+
+float XPT2046_Touchscreen::getTempF()
+{
+    float celsius = getTemp();
+    return (((9.0/5.0) * celsius) + 32);    //Resolution of 2.88°F per LSB (per bit)
+}

@@ -22,7 +22,7 @@ Created by Rowboteer for the ILI9341 3.4" 320 x 240 TFT touch display: 22/11/15
 #include <SPI.h>
 
 #include <XPT2046_Touchscreen.h>
-#define CS_PIN  43
+#define CS_PIN 8
 
 
 // Invoke custom TFT driver library

@@ -38,23 +38,28 @@
 
 class TS_Point {
 public:
-	TS_Point(void) : x(0), y(0), z(0) {}
+	TS_Point(void) : x(0), y(0), z(0), calx(0), caly(0) {}
 	TS_Point(int16_t x, int16_t y, int16_t z) : x(x), y(y), z(z) {}
+	TS_Point(int16_t x, int16_t y, int16_t z, int16_t calx, int16_t caly) : x(x), y(y), z(z), calx(calx), caly(caly) {}
 	bool operator==(TS_Point p) { return ((p.x == x) && (p.y == y) && (p.z == z)); }
 	bool operator!=(TS_Point p) { return ((p.x != x) || (p.y != y) || (p.z != z)); }
 	int16_t x, y, z;
+	int16_t calx, caly;
 };
 
 class XPT2046_Touchscreen {
 public:
-	constexpr XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255)
-		: csPin(cspin), tirqPin(tirq) { }
+	constexpr XPT2046_Touchscreen(uint8_t cspin, uint8_t tirq=255) : csPin(cspin), tirqPin(tirq) { }
+	void setCalibration(uint16_t hmin,uint16_t hmax,uint16_t vmin,uint16_t vmax,uint16_t hres,uint16_t vres,uint16_t xyswap);
+	uint16_t calibratedCoord(uint16_t raw, uint16_t axis);
+	uint16_t remap(uint16_t min, uint16_t max, uint16_t res, uint16_t dotoffset, uint16_t returnfield);
+
 	bool begin(SPIClass &wspi = SPI);
 #if defined(_FLEXIO_SPI_H_)
 	bool begin(FlexIOSPI &wflexspi);
 #endif
 
-	TS_Point getPoint();
+	TS_Point getPoint(bool doUpdateFirst = true);
 	bool tirqTouched();
 	bool touched();
 	void readData(uint16_t *x, uint16_t *y, uint8_t *z);
@@ -67,9 +72,17 @@ public:
 private:
 	void update();
 	uint8_t csPin, tirqPin, rotation=1;
-	int16_t xraw=0, yraw=0, zraw=0;
+	int16_t xraw=0, yraw=0, zraw=0, xcal=0, ycal=0;
 	uint32_t msraw=0x80000000;
 	SPIClass *_pspi = nullptr;
+	uint16_t cal_hmin   = 0;
+  uint16_t cal_hmax   = 4095;
+  uint16_t cal_vmin   = 0;
+  uint16_t cal_vmax   = 4095;
+  uint16_t cal_hres   = 320;
+  uint16_t cal_vres   = 240;
+  uint16_t cal_xyswap = 0;
+
 #if defined(_FLEXIO_SPI_H_)
 	FlexIOSPI *_pflexspi = nullptr;
 #endif

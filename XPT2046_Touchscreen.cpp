@@ -48,7 +48,7 @@ bool XPT2046_Touchscreen::begin(SPIClass &wspi)
 #define FLEXSPI_SETTING     FlexIOSPISettings(2000000, MSBFIRST, SPI_MODE0)
 bool XPT2046_Touchscreen::begin(FlexIOSPI &wflexspi)
 {
-	_pspi = nullptr; // make sure we dont use this one... 
+	_pspi = nullptr; // make sure we dont use this one...
 	_pflexspi = &wflexspi;
 	_pflexspi->begin();
 	pinMode(csPin, OUTPUT);
@@ -70,10 +70,10 @@ void isrPin( void )
 	o->isrWake = true;
 }
 
-TS_Point XPT2046_Touchscreen::getPoint()
+TS_Point XPT2046_Touchscreen::getPoint(bool doUpdateFirst = true)
 {
-	update();
-	return TS_Point(xraw, yraw, zraw);
+	if (doUpdateFirst) { update(); }
+	return TS_Point(xraw, yraw, zraw, xcal, ycal);
 }
 
 bool XPT2046_Touchscreen::tirqTouched()
@@ -144,7 +144,7 @@ void XPT2046_Touchscreen::update()
 		data[5] = _pspi->transfer16(0) >> 3;
 		digitalWrite(csPin, HIGH);
 		_pspi->endTransaction();
-	}	
+	}
 #if defined(_FLEXIO_SPI_H_)
 	else if (_pflexspi) {
 		_pflexspi->beginTransaction(FLEXSPI_SETTING);
@@ -169,7 +169,7 @@ void XPT2046_Touchscreen::update()
 
 	}
 #endif
-	// If we do not have either _pspi or _pflexspi than bail. 
+	// If we do not have either _pspi or _pflexspi than bail.
 	else return;
 
 	//Serial.printf("z=%d  ::  z1=%d,  z2=%d  ", z, z1, z2);
@@ -183,14 +183,14 @@ void XPT2046_Touchscreen::update()
 		return;
 	}
 	zraw = z;
-	
+
 	// Average pair with least distance between each measured x then y
 	//Serial.printf("    z1=%d,z2=%d  ", z1, z2);
 	//Serial.printf("p=%d,  %d,%d  %d,%d  %d,%d", zraw,
 		//data[0], data[1], data[2], data[3], data[4], data[5]);
 	int16_t x = besttwoavg( data[0], data[2], data[4] );
 	int16_t y = besttwoavg( data[1], data[3], data[5] );
-	
+
 	//Serial.printf("    %d,%d", x, y);
 	//Serial.println();
 	if (z >= Z_THRESHOLD) {
@@ -206,14 +206,82 @@ void XPT2046_Touchscreen::update()
 			break;
 		  case 2:
 			xraw = y;
-			yraw = 4095 - x;
+			yraw = 4095 - x + (4095 - ((cal_vmin < cal_vmax) ? cal_vmax : cal_vmin));  // add a vertical offset in case of x coord
 			break;
 		  default: // 3
-			xraw = 4095 - x;
+			xraw = 4095 - x + (4095 - ((cal_hmin < cal_hmax) ? cal_hmax : cal_hmin)); // add a horizontal offset in case of x coord
 			yraw = 4095 - y;
 		}
+
+		// calculate the calibrated x y coordinates
+		xcal = calibratedCoord(xraw,1);
+		ycal = calibratedCoord(yraw,2);
 	}
 }
 
+void XPT2046_Touchscreen::setCalibration(uint16_t hmin,uint16_t hmax,uint16_t vmin,uint16_t vmax,uint16_t hres,uint16_t vres,uint16_t xyswap)
+{
+    cal_hmin = hmin;
+    cal_hmax = hmax;
+    cal_vmin = vmin;
+    cal_vmax = vmax;
+    cal_hres = hres;
+    cal_vres = vres;
+    cal_xyswap = xyswap;
+}
 
 
+uint16_t XPT2046_Touchscreen::calibratedCoord(uint16_t raw, uint16_t axis)
+{
+	uint16_t xyswap = cal_xyswap;
+	if ((rotation == 0) || (rotation == 2))
+	{
+		 xyswap = ((cal_xyswap==1)?0:1); // invert the x and y axis
+ 	}
+
+  uint16_t calval;
+	uint16_t min,max,res;
+  if (((xyswap == 0) && (axis == 1)) ||
+	    ((xyswap == 1) && (axis == 2)))
+  {
+    min = cal_hmin;
+		max = cal_hmax;
+		res = cal_hres;
+	}
+	else
+	{
+		min = cal_vmin;
+		max = cal_vmax;
+		res = cal_vres;
+	}
+
+  bool reverse = false;
+  if (min > max)
+	{
+		   uint16_t t = min;
+			 min = max;
+			 max = t;
+			 reverse = true;
+	}
+
+  calval = round(((float)(raw - min) / (float)(max - min) * res));
+	if (reverse) { calval = res - calval; }
+  calval = (calval>res)?res:calval;
+  calval = (calval<0)?0:calval;
+  return calval;
+}
+
+uint16_t XPT2046_Touchscreen::remap(uint16_t min, uint16_t max, uint16_t res, uint16_t dotoffset, uint16_t returnfield)
+{
+		 float factorx = (float)((res - dotoffset) - dotoffset) / (abs(((float)max - (float)min)));
+		 int new_min = (((float)(0.0 - (float)dotoffset)) / factorx) + (float)((min>max)?max:min);
+		 int new_max = (((float)(res - (float)dotoffset)) / factorx) + (float)((min>max)?max:min);
+			if (returnfield == 1)
+			{
+				return ((min>max)?new_max:new_min);
+			}
+			else
+			{
+				 return ((min>max)?new_min:new_max);
+			}
+}

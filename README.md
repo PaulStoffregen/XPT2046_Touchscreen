@@ -29,6 +29,11 @@ libraries.
       ts.begin();
       ts.setRotation(1);
 
+The begin() function can also specify communication on a different SPI
+port.
+
+      ts.begin(SPI1); // use SPI1 rather than SPI
+
 ## Reading Touch Info
 
 The touched() function tells if the display is currently being touched,

@@ -61,11 +61,16 @@ public:
 	bool bufferEmpty();
 	uint8_t bufferSize() { return 1; }
 	void setRotation(uint8_t n) { rotation = n % 4; }
+    float getVBat();
+    float getAuxIn();
+    float getTemp();
+    float getTempF();
 // protected:
 	volatile bool isrWake=true;
 
 private:
 	void update();
+    int16_t updateADC(int16_t adc);
 	uint8_t csPin, tirqPin, rotation=1;
 	int16_t xraw=0, yraw=0, zraw=0;
 	uint32_t msraw=0x80000000;

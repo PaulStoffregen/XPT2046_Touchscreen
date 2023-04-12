@@ -1,7 +1,11 @@
 XPT2046_Touchscreen	KEYWORD1
 TS_Point	KEYWORD1
 getPoint	KEYWORD2
-touched	KEYWORD2
+getVBat		KEYWORD2
+getAuxIn	KEYWORD2
+getTemp		KEYWORD2
+getTempF	KEYWORD2
+touched	  KEYWORD2
 readData	KEYWORD2
 bufferEmpty	KEYWORD2
 bufferSize	KEYWORD2

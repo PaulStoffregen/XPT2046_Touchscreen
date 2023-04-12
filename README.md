@@ -58,6 +58,20 @@ or with getPoint(), which returns a TS_Point object:
 
 The Z coordinate represents the amount of pressure applied to the screen.
 
+## Reading ADCs Info
+
+The XPT2046 is loaded with different ADC inputs thats can be read
+ - VBat input with an internal voltage divider 1:4, so you can input 0.125V to 6V without issues. 
+ - AuxIn you can input 0.125V to 1.5V
+ - Temp/Temp0 are used for ambient temperature. The resolution is 1.6°C per bit and fluctuates a lot (+/- 3°C), but gives a general idea.
+
+Using the following functions, you can read the ADCs and they'll return a float:
+
+      Serial.println(ts.getVBat());
+      Serial.println(ts.getAuxIn());
+      Serial.println(ts.getTemp());
+      Serial.println(ts.getTempF());
+
 ## Adafruit Library Compatibility
 
 XPT2046_Touchscreen is meant to be a compatible with sketches written for Adafruit_STMPE610, offering the same functions, parameters and numerical ranges as Adafruit's library.

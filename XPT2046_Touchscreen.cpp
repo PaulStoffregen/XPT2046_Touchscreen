@@ -22,8 +22,6 @@
 
 #include "XPT2046_Touchscreen.h"
 
-#define Z_THRESHOLD     300
-#define Z_THRESHOLD_INT	75
 #define MSEC_THRESHOLD  3
 #define SPI_SETTING     SPISettings(2000000, MSBFIRST, SPI_MODE0)
 
@@ -48,7 +46,7 @@ bool XPT2046_Touchscreen::begin(SPIClass &wspi)
 #define FLEXSPI_SETTING     FlexIOSPISettings(2000000, MSBFIRST, SPI_MODE0)
 bool XPT2046_Touchscreen::begin(FlexIOSPI &wflexspi)
 {
-	_pspi = nullptr; // make sure we dont use this one... 
+	_pspi = nullptr; // make sure we dont use this one...
 	_pflexspi = &wflexspi;
 	_pflexspi->begin();
 	pinMode(csPin, OUTPUT);
@@ -84,7 +82,7 @@ bool XPT2046_Touchscreen::tirqTouched()
 bool XPT2046_Touchscreen::touched()
 {
 	update();
-	return (zraw >= Z_THRESHOLD);
+	return (zraw >= Z_Threshold);
 }
 
 void XPT2046_Touchscreen::readData(uint16_t *x, uint16_t *y, uint8_t *z)
@@ -132,7 +130,7 @@ void XPT2046_Touchscreen::update()
 		z = z1 + 4095;
 		int16_t z2 = _pspi->transfer16(0x91 /* X */) >> 3;
 		z -= z2;
-		if (z >= Z_THRESHOLD) {
+		if (z >= Z_Threshold) {
 			_pspi->transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
 			data[0] = _pspi->transfer16(0xD1 /* Y */) >> 3;
 			data[1] = _pspi->transfer16(0x91 /* X */) >> 3; // make 3 x-y measurements
@@ -144,7 +142,7 @@ void XPT2046_Touchscreen::update()
 		data[5] = _pspi->transfer16(0) >> 3;
 		digitalWrite(csPin, HIGH);
 		_pspi->endTransaction();
-	}	
+	}
 #if defined(_FLEXIO_SPI_H_)
 	else if (_pflexspi) {
 		_pflexspi->beginTransaction(FLEXSPI_SETTING);
@@ -154,7 +152,7 @@ void XPT2046_Touchscreen::update()
 		z = z1 + 4095;
 		int16_t z2 = _pflexspi->transfer16(0x91 /* X */) >> 3;
 		z -= z2;
-		if (z >= Z_THRESHOLD) {
+		if (z >= Z_Threshold) {
 			_pflexspi->transfer16(0x91 /* X */);  // dummy X measure, 1st is always noisy
 			data[0] = _pflexspi->transfer16(0xD1 /* Y */) >> 3;
 			data[1] = _pflexspi->transfer16(0x91 /* X */) >> 3; // make 3 x-y measurements
@@ -169,31 +167,31 @@ void XPT2046_Touchscreen::update()
 
 	}
 #endif
-	// If we do not have either _pspi or _pflexspi than bail. 
+	// If we do not have either _pspi or _pflexspi then bail.
 	else return;
 
 	//Serial.printf("z=%d  ::  z1=%d,  z2=%d  ", z, z1, z2);
 	if (z < 0) z = 0;
-	if (z < Z_THRESHOLD) { //	if ( !touched ) {
+	if (z < Z_Threshold) { //	if ( !touched ) {
 		// Serial.println();
 		zraw = 0;
-		if (z < Z_THRESHOLD_INT) { //	if ( !touched ) {
+		if (z < Z_Threshold_int) { //	if ( !touched ) {
 			if (255 != tirqPin) isrWake = false;
 		}
 		return;
 	}
 	zraw = z;
-	
+
 	// Average pair with least distance between each measured x then y
 	//Serial.printf("    z1=%d,z2=%d  ", z1, z2);
 	//Serial.printf("p=%d,  %d,%d  %d,%d  %d,%d", zraw,
 		//data[0], data[1], data[2], data[3], data[4], data[5]);
 	int16_t x = besttwoavg( data[0], data[2], data[4] );
 	int16_t y = besttwoavg( data[1], data[3], data[5] );
-	
+
 	//Serial.printf("    %d,%d", x, y);
 	//Serial.println();
-	if (z >= Z_THRESHOLD) {
+	if (z >= Z_Threshold) {
 		msraw = now;	// good read completed, set wait
 		switch (rotation) {
 		  case 0:

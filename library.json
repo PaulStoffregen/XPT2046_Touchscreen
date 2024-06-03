@@ -1,5 +1,6 @@
 {
   "name": "XPT2046_Touchscreen",
+  "version": "1.4",
   "keywords": "display, tft, lcd, graphics, spi, touchscreen",
   "description": "Touchscreens using the XPT2046 controller chip. Many very low cost color TFT displays with touch screens have this chip.",
   "exclude": "doc",

@@ -36,6 +36,10 @@
 #error "Arduino 1.6.0 or later (SPI library) is required"
 #endif
 
+// Initial thresholds, for press and for clearing interrupt flag.
+#define Z_THRESHOLD     400
+#define Z_THRESHOLD_INT	75
+
 class TS_Point {
 public:
 	TS_Point(void) : x(0), y(0), z(0) {}
@@ -61,6 +65,8 @@ public:
 	bool bufferEmpty();
 	uint8_t bufferSize() { return 1; }
 	void setRotation(uint8_t n) { rotation = n % 4; }
+	void setThresholds(uint16_t Z_Threshold_press = Z_THRESHOLD, uint16_t Z_Threshold_interrupt = Z_THRESHOLD_INT) {
+	  Z_Threshold = Z_Threshold_press; Z_Threshold_Int = Z_Threshold_interrupt; }
 // protected:
 	volatile bool isrWake=true;
 
@@ -68,6 +74,7 @@ private:
 	void update();
 	uint8_t csPin, tirqPin, rotation=1;
 	int16_t xraw=0, yraw=0, zraw=0;
+	int16_t Z_Threshold=Z_THRESHOLD, Z_Threshold_Int=Z_THRESHOLD_INT;
 	uint32_t msraw=0x80000000;
 	SPIClass *_pspi = nullptr;
 #if defined(_FLEXIO_SPI_H_)
